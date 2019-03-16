@@ -44,7 +44,7 @@ architecture TB of SPI_Master_With_Single_CS_TB is
     o_dv   <= '0';
     wait until rising_edge(w_Master_TX_Ready);
   end procedure SendSingleByte;
-  
+
 begin  -- architecture TB
 
   -- Clock Generators:
@@ -58,22 +58,22 @@ begin  -- architecture TB
       MAX_BYTES_PER_CS  => MAX_BYTES_PER_CS,
       CS_INACTIVE_CLKS  => CS_INACTIVE_CLKS)
     port map (
-      i_Rst_L    => i_Rst_L,
-      i_Clk      => i_Clk,
+      i_Rst_L    => r_Rst_L,
+      i_Clk      => r_Clk,
       -- TX (MOSI) Signals
-      i_TX_Count => i_TX_Count,     -- Number of bytes per CS         
-      i_TX_Byte  => i_TX_Byte,      -- Byte to transmit on MOSI       
-      i_TX_DV    => i_TX_DV,        -- Data Valid Pulse with i_TX_Byte
-      o_TX_Ready => o_TX_Ready,     -- Transmit Ready for Byte        
+      i_TX_Count => r_Master_TX_Count,  -- Number of bytes per CS         
+      i_TX_Byte  => r_Master_TX_Byte,   -- Byte to transmit on MOSI       
+      i_TX_DV    => r_Master_TX_DV,     -- Data Valid Pulse with i_TX_Byte
+      o_TX_Ready => w_Master_TX_Ready,  -- Transmit Ready for Byte        
       -- RX (MISO) Signals
-      o_RX_Count => o_RX_Count,     -- Index of RX'd byte              
-      o_RX_DV    => o_RX_DV,        -- Data Valid pulse (1 clock cycle)
-      o_RX_Byte  => o_RX_Byte,      -- Byte received on MISO           
+      o_RX_Count => w_Master_RX_Count,  -- Index of RX'd byte              
+      o_RX_DV    => w_Master_RX_DV,     -- Data Valid pulse (1 clock cycle)
+      o_RX_Byte  => w_Master_RX_Byte,   -- Byte received on MISO           
       -- SPI Interface
-      o_SPI_Clk  => o_SPI_Clk,
-      i_SPI_MISO => i_SPI_MISO,
-      o_SPI_MOSI => o_SPI_MOSI,
-      o_SPI_CS_n => o_SPI_CS_n
+      o_SPI_Clk  => w_SPI_Clk,
+      i_SPI_MISO => w_SPI_MOSI,
+      o_SPI_MOSI => w_SPI_MOSI,
+      o_SPI_CS_n => w_SPI_CS_n
       );
 
   Testing : process is
@@ -86,7 +86,7 @@ begin  -- architecture TB
     -- Test sending 2 bytes
     SendSingleByte(X"C1", r_Master_TX_Byte, r_Master_TX_DV);
     report "Sent out 0xC1, Received 0x" & to_hstring(unsigned(w_Master_RX_Byte));
-    SendSingleByte(X"C1", r_Master_TX_Byte, r_Master_TX_DV);
+    SendSingleByte(X"C2", r_Master_TX_Byte, r_Master_TX_DV);
     report "Sent out 0xC2, Received 0x" & to_hstring(unsigned(w_Master_RX_Byte)); 
     wait for 100 ns;
     assert false report "Test Complete" severity failure;

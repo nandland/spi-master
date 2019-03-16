@@ -162,11 +162,11 @@ begin
         r_TX_Bit_Count <= "111";
 
       -- Catch the case where we start transaction and CPHA = 0
-      elsif r_TX_DV and not w_CPHA then
+      elsif (r_TX_DV = '1' and w_CPHA = '0') then
         o_SPI_MOSI     <= r_TX_Byte(7);
         r_TX_Bit_Count <= "110";        -- 6
-      elsif (r_Leading_Edge and w_CPHA) or (r_Trailing_Edge and not w_CPHA) then
-        r_TX_Bit_Count <= r_TX_Bit_Count - '1';
+      elsif (r_Leading_Edge = '1' and w_CPHA = '1') or (r_Trailing_Edge = '1' and w_CPHA = '0') then
+        r_TX_Bit_Count <= r_TX_Bit_Count - 1;
         o_SPI_MOSI     <= r_TX_Byte(to_integer(r_TX_Bit_Count));
       end if;
     end if;
@@ -186,9 +186,9 @@ begin
 
       if o_TX_Ready = '1' then -- Check if ready, if so reset count to default
         r_RX_Bit_Count <= "111";        -- Starts at 7
-      elsif (r_Leading_Edge and not w_CPHA) or (r_Trailing_Edge and w_CPHA) then
+      elsif (r_Leading_Edge = '1' and w_CPHA = '0') or (r_Trailing_Edge = '1' and w_CPHA = '1') then
         o_RX_Byte(to_integer(r_RX_Bit_Count)) <= i_SPI_MISO;  -- Sample data
-        r_RX_Bit_Count <= r_RX_Bit_Count - '1';
+        r_RX_Bit_Count <= r_RX_Bit_Count - 1;
         if r_RX_Bit_Count = "000" then
           o_RX_DV <= '1';   -- Byte done, pulse Data Valid
         end if;

@@ -80,7 +80,7 @@ architecture RTL of SPI_Master_With_Single_CS is
 begin
 
   -- Instantiate Master
-  SPI_Master_1: entity work.SPI_Master
+  SPI_Master_1 : entity work.SPI_Master
     generic map (
       SPI_MODE          => SPI_MODE,
       CLKS_PER_HALF_BIT => CLKS_PER_HALF_BIT)
@@ -91,7 +91,7 @@ begin
       -- TX (MOSI) Signals
       i_TX_Byte  => i_TX_Byte,          -- Byte to transmit
       i_TX_DV    => i_TX_DV,            -- Data Valid pulse
-      o_TX_Ready => o_TX_Ready,         -- Transmit Ready for Byte
+      o_TX_Ready => w_Master_Ready,     -- Transmit Ready for Byte
       -- RX (MISO) Signals
       o_RX_DV    => o_RX_DV,            -- Data Valid pulse
       o_RX_Byte  => o_RX_Byte,          -- Byte received on MISO
@@ -163,9 +163,7 @@ begin
 
   o_SPI_CS_n <= r_CS_n;
 
-  o_TX_Ready <= '1' when (r_SM_CS = IDLE) or (r_SM_CS = TRANSFER and w_Master_Ready = '1' and r_TX_Count > 0) and i_TX_DV != '1' else '0'; 
-  
-  --assign o_TX_Ready  = ((r_SM_CS == IDLE) | (r_SM_CS == TRANSFER && w_Master_Ready == 1'b1 && r_TX_Count > 0)) & ~i_TX_DV;
+  o_TX_Ready <= '1' when i_TX_DV /= '1' and ((r_SM_CS = IDLE) or (r_SM_CS = TRANSFER and w_Master_Ready = '1' and r_TX_Count > 0)) else '0'; 
 
 end architecture RTL;
 
