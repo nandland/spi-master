@@ -114,7 +114,7 @@ module SPI_Master_With_Single_CS
         begin
           if (r_CS_n & i_TX_DV) // Start of transmission
           begin
-            r_TX_Count <= i_TX_Count - 1; // Register TX Count
+            r_TX_Count <= MAX_BYTES_PER_CS - 1; // Register TX Count
             r_CS_n     <= 1'b0;       // Drive CS low
             r_SM_CS    <= TRANSFER;   // Transfer bytes
           end
