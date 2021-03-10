@@ -112,21 +112,21 @@ module SPI_Master
         
         if (r_SPI_Clk_Count == CLKS_PER_HALF_BIT*2-1)
         begin
-          r_SPI_Clk_Edges <= r_SPI_Clk_Edges - 1;
+          r_SPI_Clk_Edges <= r_SPI_Clk_Edges - 1'b1;
           r_Trailing_Edge <= 1'b1;
           r_SPI_Clk_Count <= 0;
           r_SPI_Clk       <= ~r_SPI_Clk;
         end
         else if (r_SPI_Clk_Count == CLKS_PER_HALF_BIT-1)
         begin
-          r_SPI_Clk_Edges <= r_SPI_Clk_Edges - 1;
+          r_SPI_Clk_Edges <= r_SPI_Clk_Edges - 1'b1;
           r_Leading_Edge  <= 1'b1;
-          r_SPI_Clk_Count <= r_SPI_Clk_Count + 1;
+          r_SPI_Clk_Count <= r_SPI_Clk_Count + 1'b1;
           r_SPI_Clk       <= ~r_SPI_Clk;
         end
         else
         begin
-          r_SPI_Clk_Count <= r_SPI_Clk_Count + 1;
+          r_SPI_Clk_Count <= r_SPI_Clk_Count + 1'b1;
         end
       end  
       else
@@ -183,7 +183,7 @@ module SPI_Master
       end
       else if ((r_Leading_Edge & w_CPHA) | (r_Trailing_Edge & ~w_CPHA))
       begin
-        r_TX_Bit_Count <= r_TX_Bit_Count - 1;
+        r_TX_Bit_Count <= r_TX_Bit_Count - 1'b1;
         o_SPI_MOSI     <= r_TX_Byte[r_TX_Bit_Count];
       end
     end
@@ -212,7 +212,7 @@ module SPI_Master
       else if ((r_Leading_Edge & ~w_CPHA) | (r_Trailing_Edge & w_CPHA))
       begin
         o_RX_Byte[r_RX_Bit_Count] <= i_SPI_MISO;  // Sample data
-        r_RX_Bit_Count            <= r_RX_Bit_Count - 1;
+        r_RX_Bit_Count            <= r_RX_Bit_Count - 1'b1;
         if (r_RX_Bit_Count == 3'b000)
         begin
           o_RX_DV   <= 1'b1;   // Byte done, pulse Data Valid
