@@ -61,7 +61,6 @@ entity SPI_Master is
 end entity SPI_Master;
 
 architecture RTL of SPI_Master is
-
   -- SPI Interface (All Runs at SPI Clock Domain)
   signal w_CPOL : std_logic;     -- Clock polarity
   signal w_CPHA : std_logic;     -- Clock phase
@@ -73,12 +72,12 @@ architecture RTL of SPI_Master is
   signal r_Trailing_Edge : std_logic;
   signal r_TX_DV         : std_logic;
   signal r_TX_Byte       : std_logic_vector(7 downto 0);
+  signal r_TX_Ready      : std_logic;
 
   signal r_RX_Bit_Count : unsigned(2 downto 0);
   signal r_TX_Bit_Count : unsigned(2 downto 0);
 
 begin
-
   -- CPOL: Clock Polarity
   -- CPOL=0 means clock idles at 0, leading edge is rising edge.
   -- CPOL=1 means clock idles at 1, leading edge is falling edge.
@@ -90,12 +89,14 @@ begin
   -- CPHA=1 means the "out" side changes the data on leading edge of clock
   --              the "in" side captures data on the trailing edge of clock
   w_CPHA <= '1' when (SPI_MODE = 1) or (SPI_MODE = 3) else '0';
-
+  
+  o_TX_Ready <= r_TX_Ready;
+  
   -- Purpose: Generate SPI Clock correct number of times when DV pulse comes
   Edge_Indicator : process (i_Clk, i_Rst_L)
   begin
     if i_Rst_L = '0' then
-      o_TX_Ready      <= '0';
+      r_TX_Ready      <= '0';
       r_SPI_Clk_Edges <= 0;
       r_Leading_Edge  <= '0';
       r_Trailing_Edge <= '0';
@@ -108,10 +109,10 @@ begin
       r_Trailing_Edge <= '0';
       
       if i_TX_DV = '1' then
-        o_TX_Ready      <= '0';
+        r_TX_Ready      <= '0';
         r_SPI_Clk_Edges <= 16;  -- Total # edges in one byte ALWAYS 16
       elsif r_SPI_Clk_Edges > 0 then
-        o_TX_Ready <= '0';
+        r_TX_Ready <= '0';
         
         if r_SPI_Clk_Count = CLKS_PER_HALF_BIT*2-1 then
           r_SPI_Clk_Edges <= r_SPI_Clk_Edges - 1;
@@ -127,7 +128,7 @@ begin
           r_SPI_Clk_Count <= r_SPI_Clk_Count + 1;
         end if;
       else
-        o_TX_Ready <= '1';
+        r_TX_Ready <= '1';
       end if;
     end if;
   end process Edge_Indicator;
@@ -158,7 +159,7 @@ begin
       r_TX_Bit_Count <= "111";          -- Send MSB first
     elsif rising_edge(i_Clk) then
       -- If ready is high, reset bit counts to default
-      if o_TX_Ready = '1' then
+      if r_TX_Ready = '1' then
         r_TX_Bit_Count <= "111";
 
       -- Catch the case where we start transaction and CPHA = 0
@@ -184,7 +185,7 @@ begin
       -- Default Assignments
       o_RX_DV <= '0';
 
-      if o_TX_Ready = '1' then -- Check if ready, if so reset count to default
+      if r_TX_Ready = '1' then -- Check if ready, if so reset count to default
         r_RX_Bit_Count <= "111";        -- Starts at 7
       elsif (r_Leading_Edge = '1' and w_CPHA = '0') or (r_Trailing_Edge = '1' and w_CPHA = '1') then
         o_RX_Byte(to_integer(r_RX_Bit_Count)) <= i_SPI_MISO;  -- Sample data
