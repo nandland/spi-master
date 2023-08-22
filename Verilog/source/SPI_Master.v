@@ -101,7 +101,7 @@ module SPI_Master
       r_Leading_Edge  <= 1'b0;
       r_Trailing_Edge <= 1'b0;
       
-      if (i_TX_DV)
+      if (i_TX_DV && o_TX_Ready)
       begin
         o_TX_Ready      <= 1'b0;
         r_SPI_Clk_Edges <= 16;  // Total # edges in one byte ALWAYS 16
